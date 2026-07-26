@@ -31,7 +31,20 @@ jobs:
       - name: Run source-patch tests
         run: python -m unittest discover -s tests -v
       - name: Download, clean, validate and segment
-        run: python -u tools/build_source.py
+        shell: bash
+        run: |
+          set +e
+          python -u tools/build_source.py 2>&1 | tee build-diagnostic.log
+          status=${PIPESTATUS[0]}
+          exit "$status"
+      - name: Persist failed build diagnostic
+        if: failure() && github.event_name == 'pull_request'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build-diagnostic.log
+          git commit -m 'Record source build diagnostic' || true
+          git push origin HEAD:${{ github.head_ref }}
       - name: Verify generated package
         run: |
           test "$(find source/books -type f | wc -l)" -eq 24
