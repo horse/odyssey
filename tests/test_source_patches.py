@@ -7,11 +7,12 @@ class SourcePatchTests(unittest.TestCase):
     def test_restores_book_10_line_456(self):
         books = {10: [
             Verse(10, 455, 'before', False, 7),
-            Verse(10, 457, 'after', False, 7),
+            Verse(10, 457, 'μηκέτι νῦν θαλερὸν γόον ὄρνυτε· οἶδα καὶ αὐτὴ', False, 7),
         ]}
         patches = apply_source_patches(books)
         self.assertEqual([v.line for v in books[10]], [455, 456, 457])
-        self.assertEqual(books[10][1].text, 'μηκέτι νῦν θαλερὸν γόον ὄρνυτε· οἶδα καὶ αὐτὴ')
+        self.assertEqual(books[10][1].text, 'διογενὲς Λαερτιάδη, πολυμήχανʼ Ὀδυσσεῦ,')
+        self.assertNotEqual(books[10][1].text, books[10][2].text)
         self.assertEqual(books[10][1].quote, 7)
         self.assertIn('PATCH-OD10-456', patches)
 
