@@ -118,3 +118,5 @@ def main():
     (root/'README.md').write_text('# Ready-to-translate Greek source\n\nValidated: 24 books, 12,110 lines. Upload only the current book’s `segments/ODY-Bxx-*` files into a ChatGPT Project.\n',encoding='utf-8')
     print(json.dumps(info,ensure_ascii=False))
 if __name__=='__main__':main()
+
+# Workflow trigger: source build v1.0
