@@ -36,6 +36,27 @@ class SourcePatchTests(unittest.TestCase):
         self.assertTrue(books[23][2].text.startswith('νῦν δʼ οἱ μὲν'))
         self.assertIn('PATCH-OD23-48-49', patches)
 
+    def test_restores_xml_line_order_in_books_3_and_14(self):
+        books = {
+            3: [
+                Verse(3, 303, 'a', False, None),
+                Verse(3, 305, 'c', False, None),
+                Verse(3, 304, 'b', False, None),
+                Verse(3, 306, 'd', False, None),
+            ],
+            14: [
+                Verse(14, 62, 'a', False, None),
+                Verse(14, 64, 'c', False, None),
+                Verse(14, 63, 'b', False, None),
+                Verse(14, 65, 'd', False, None),
+            ],
+        }
+        patches = apply_source_patches(books)
+        self.assertEqual([v.line for v in books[3]], [303, 304, 305, 306])
+        self.assertEqual([v.line for v in books[14]], [62, 63, 64, 65])
+        self.assertIn('PATCH-OD03-304-305-ORDER', patches)
+        self.assertIn('PATCH-OD14-63-64-ORDER', patches)
+
 
 if __name__ == '__main__':
     unittest.main()
