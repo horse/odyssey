@@ -4,7 +4,14 @@ on:
   push:
     branches: [main]
     paths:
-      - 'tools/build_source.py'
+      - 'tools/**'
+      - 'tests/**'
+      - '.github/workflows/build-source.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/**'
+      - 'tests/**'
       - '.github/workflows/build-source.yml'
   workflow_dispatch:
 
@@ -15,26 +22,33 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+      - name: Run source-repair tests
+        run: python -m unittest discover -s tests -v
       - name: Download, clean, validate and segment
-        run: python tools/build_source.py
+        run: python -u -m tools.run_build
       - name: Verify generated package
         run: |
           test "$(find source/books -type f | wc -l)" -eq 24
           test "$(find source/lines -type f | wc -l)" -eq 24
           test -s source/manifest.tsv
+          test -s source/SOURCE_PATCHES.md
           python - <<'PY'
           import json
           d=json.load(open('source/source_build.json'))
           assert d['books']==24
           assert d['verse_lines']==12110
           assert d['segments']>24
+          assert len(d['source_patches'])==5
           print(d)
           PY
       - name: Commit generated source files
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
