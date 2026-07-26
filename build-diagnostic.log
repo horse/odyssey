@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/home/runner/work/odyssey/odyssey/tools/build_source.py", line 120, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/home/runner/work/odyssey/odyssey/tools/build_source.py", line 96, in main
+    sha=download(original); books,sha2=parse(original); assert sha==sha2;validate(books)
+                                                                         ^^^^^^^^^^^^^^^
+  File "/home/runner/work/odyssey/odyssey/tools/build_source.py", line 55, in validate
+    assert sum(len(v) for v in books.values())==12110
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
