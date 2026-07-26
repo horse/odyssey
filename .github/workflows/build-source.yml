@@ -6,6 +6,11 @@ on:
     paths:
       - 'tools/build_source.py'
       - '.github/workflows/build-source.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/build_source.py'
+      - '.github/workflows/build-source.yml'
   workflow_dispatch:
 
 permissions:
@@ -20,9 +25,12 @@ jobs:
         with:
           python-version: '3.12'
       - name: Download, clean, validate and segment
-        run: python tools/build_source.py
+        run: |
+          set -euxo pipefail
+          python -u tools/build_source.py
       - name: Verify generated package
         run: |
+          set -euxo pipefail
           test "$(find source/books -type f | wc -l)" -eq 24
           test "$(find source/lines -type f | wc -l)" -eq 24
           test -s source/manifest.tsv
@@ -35,6 +43,7 @@ jobs:
           print(d)
           PY
       - name: Commit generated source files
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
