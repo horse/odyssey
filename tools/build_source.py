@@ -131,14 +131,58 @@ def _insert_between(
     verses.sort(key=lambda verse: verse.line)
 
 
-def apply_source_patches(books: dict[int, list[Verse]]) -> dict[str, dict]:
-    """Repair three documented defects in the locked Perseus XML.
+def _repair_order(
+    books: dict[int, list[Verse]],
+    patches: dict[str, dict],
+    *,
+    book: int,
+    first: int,
+    second: int,
+    patch_id: str,
+) -> None:
+    if book not in books:
+        return
+    verses = books[book]
+    actual = [verse.line for verse in verses]
+    sorted_lines = sorted(actual)
+    if actual == sorted_lines:
+        return
+    positions = {line: actual.index(line) for line in (first, second)}
+    if positions[first] < positions[second]:
+        raise ValueError(f'{patch_id}: unexpected line-order anomaly')
+    verses.sort(key=lambda verse: verse.line)
+    patches[patch_id] = {
+        'book': book,
+        'lines': [second, first],
+        'action': 'restore_xml_element_order_by_line_number',
+        'note': (
+            f'The locked Perseus XML places line {first} before line {second}; '
+            'the derived clean text restores ascending verse order without changing wording.'
+        ),
+        'comparison_source': 'Perseus XML line identifiers and standard verse order',
+    }
 
-    The original XML remains untouched. Repairs apply only to derived clean text.
-    The function is deliberately strict so a future source-file change cannot be
-    silently patched in the wrong place.
-    """
+
+def apply_source_patches(books: dict[int, list[Verse]]) -> dict[str, dict]:
+    """Apply documented repairs to derived text; never alter the downloaded XML."""
     patches: dict[str, dict] = {}
+
+    _repair_order(
+        books,
+        patches,
+        book=3,
+        first=305,
+        second=304,
+        patch_id='PATCH-OD03-304-305-ORDER',
+    )
+    _repair_order(
+        books,
+        patches,
+        book=14,
+        first=64,
+        second=63,
+        patch_id='PATCH-OD14-63-64-ORDER',
+    )
 
     if 10 in books:
         verses = books[10]
@@ -318,7 +362,9 @@ def segment(verses: list[Verse]) -> list[list[Atom]]:
     return segments
 
 
-def patch_ids_for_range(patches: dict[str, dict], book: int, start: int, end: int) -> list[str]:
+def patch_ids_for_range(
+    patches: dict[str, dict], book: int, start: int, end: int
+) -> list[str]:
     found: list[str] = []
     for patch_id, patch in patches.items():
         if patch['book'] != book:
@@ -339,7 +385,7 @@ def write_patch_records(root: Path, patches: dict[str, dict]) -> None:
         '',
         'The downloaded Perseus XML is preserved unchanged in `original/`. The clean',
         'derived text applies the following explicit repairs so the translation source',
-        'has the standard continuous 12,110-line numbering.',
+        'has continuous standard verse order and 12,110 numbered lines.',
         '',
     ]
     for patch_id, patch in patches.items():
@@ -356,9 +402,14 @@ def write_patch_records(root: Path, patches: dict[str, dict]) -> None:
         if patch.get('text'):
             sections.extend(['', '```grc', patch['text'], '```'])
         if patch.get('inserted_text'):
-            sections.extend(['', 'Inserted 23.48:', '', '```grc', patch['inserted_text'], '```'])
+            sections.extend([
+                '', 'Inserted 23.48:', '', '```grc', patch['inserted_text'], '```'
+            ])
         if patch.get('renumbered_text'):
-            sections.extend(['', 'Existing XML line renumbered as 23.49:', '', '```grc', patch['renumbered_text'], '```'])
+            sections.extend([
+                '', 'Existing XML line renumbered as 23.49:', '',
+                '```grc', patch['renumbered_text'], '```'
+            ])
         sections.append('')
     (root / 'SOURCE_PATCHES.md').write_text('\n'.join(sections), encoding='utf-8')
 
@@ -372,10 +423,17 @@ def main() -> None:
         raise AssertionError('Downloaded and parsed source hashes differ')
 
     patches = apply_source_patches(books)
-    expected_patch_ids = {'PATCH-OD10-456', 'PATCH-OD16-101', 'PATCH-OD23-48-49'}
+    expected_patch_ids = {
+        'PATCH-OD03-304-305-ORDER',
+        'PATCH-OD10-456',
+        'PATCH-OD14-63-64-ORDER',
+        'PATCH-OD16-101',
+        'PATCH-OD23-48-49',
+    }
     if set(patches) != expected_patch_ids:
         raise AssertionError(
-            f'Expected source patches {sorted(expected_patch_ids)}, applied {sorted(patches)}'
+            f'Expected source patches {sorted(expected_patch_ids)}, '
+            f'applied {sorted(patches)}'
         )
     validate(books)
 
@@ -481,9 +539,9 @@ def main() -> None:
     )
     (root / 'README.md').write_text(
         '# Ready-to-translate Greek source\n\n'
-        'Validated: 24 books and 12,110 continuously numbered lines after three '\
-        'documented source repairs. Upload only the current book’s '\
-        '`segments/ODY-Bxx-*` files into a ChatGPT Project. See '\
+        'Validated: 24 books and 12,110 continuously numbered lines after five '
+        'documented source repairs. Upload only the current book’s '
+        '`segments/ODY-Bxx-*` files into a ChatGPT Project. See '
         '`SOURCE_PATCHES.md` for the repair record.\n',
         encoding='utf-8',
     )
