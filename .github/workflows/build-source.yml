@@ -31,7 +31,7 @@ jobs:
       - name: Run source-repair tests
         run: python -m unittest discover -s tests -v
       - name: Download, clean, validate and segment
-        run: python -u tools/run_build.py
+        run: python -u -m tools.run_build
       - name: Verify generated package
         run: |
           test "$(find source/books -type f | wc -l)" -eq 24
