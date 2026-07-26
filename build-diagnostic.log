@@ -10,3 +10,6 @@ Traceback (most recent call last):
     assert sum(len(v) for v in books.values())==12110
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 AssertionError
+{'book': 10, 'count': 573, 'min': 1, 'max': 574, 'missing': [456], 'duplicates': []}
+{'book': 16, 'count': 480, 'min': 1, 'max': 481, 'missing': [101], 'duplicates': []}
+{'book': 23, 'count': 371, 'min': 1, 'max': 372, 'missing': [49], 'duplicates': []}
