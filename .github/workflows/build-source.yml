@@ -1,0 +1,47 @@
+name: Build cleaned Odyssey Greek source
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/build_source.py'
+      - '.github/workflows/build-source.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download, clean, validate and segment
+        run: python tools/build_source.py
+      - name: Verify generated package
+        run: |
+          test "$(find source/books -type f | wc -l)" -eq 24
+          test "$(find source/lines -type f | wc -l)" -eq 24
+          test -s source/manifest.tsv
+          python - <<'PY'
+          import json
+          d=json.load(open('source/source_build.json'))
+          assert d['books']==24
+          assert d['verse_lines']==12110
+          assert d['segments']>24
+          print(d)
+          PY
+      - name: Commit generated source files
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add source
+          if git diff --cached --quiet; then
+            echo 'No generated changes.'
+          else
+            git commit -m 'Build cleaned and segmented Greek source'
+            git push
+          fi
