@@ -22,11 +22,11 @@ has continuous standard verse order and 12,110 numbered lines.
 
 - Book: 10
 - Action: `insert_missing_line`
-- Note: The locked Perseus XML jumps from line 455 to 457.
-- Comparison source: Scaife ATLAS Homer Odyssey 10.456
+- Note: The locked Perseus XML jumps from line 455 to 457; the missing standard line is Circe’s vocative address to Odysseus.
+- Comparison source: Greek Language Centre Odyssey 10.455–460
 
 ```grc
-μηκέτι νῦν θαλερὸν γόον ὄρνυτε· οἶδα καὶ αὐτὴ
+διογενὲς Λαερτιάδη, πολυμήχανʼ Ὀδυσσεῦ,
 ```
 
 ## PATCH-OD16-101
