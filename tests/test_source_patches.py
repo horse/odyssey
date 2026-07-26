@@ -1,5 +1,6 @@
 import unittest
-from tools.build_source import Verse, apply_source_patches
+from tools.build_source import Verse
+from tools.source_repairs import apply_source_patches
 
 
 class SourcePatchTests(unittest.TestCase):
