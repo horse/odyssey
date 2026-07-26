@@ -21,16 +21,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Download, clean, validate and segment
         run: |
-          set -euxo pipefail
-          python -u tools/build_source.py
+          set +e
+          python -u tools/build_source.py > build-diagnostic.log 2>&1
+          status=$?
+          cat build-diagnostic.log
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add build-diagnostic.log
+            git commit -m 'Record source build diagnostic' || true
+            git push origin HEAD:${{ github.head_ref }}
+          fi
+          exit "$status"
       - name: Verify generated package
         run: |
-          set -euxo pipefail
           test "$(find source/books -type f | wc -l)" -eq 24
           test "$(find source/lines -type f | wc -l)" -eq 24
           test -s source/manifest.tsv
