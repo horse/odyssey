@@ -66,7 +66,7 @@ def apply_source_patches(books):
             _insert_between(
                 verses,
                 line=456,
-                text='μηκέτι νῦν θαλερὸν γόον ὄρνυτε· οἶδα καὶ αὐτὴ',
+                text='διογενὲς Λαερτιάδη, πολυμήχανʼ Ὀδυσσεῦ,',
                 previous_line=455,
                 next_line=457,
             )
@@ -74,9 +74,12 @@ def apply_source_patches(books):
                 'book': 10,
                 'line': 456,
                 'action': 'insert_missing_line',
-                'text': 'μηκέτι νῦν θαλερὸν γόον ὄρνυτε· οἶδα καὶ αὐτὴ',
-                'note': 'The locked Perseus XML jumps from line 455 to 457.',
-                'comparison_source': 'Scaife ATLAS Homer Odyssey 10.456',
+                'text': 'διογενὲς Λαερτιάδη, πολυμήχανʼ Ὀδυσσεῦ,',
+                'note': (
+                    'The locked Perseus XML jumps from line 455 to 457; '
+                    'the missing standard line is Circe’s vocative address to Odysseus.'
+                ),
+                'comparison_source': 'Greek Language Centre Odyssey 10.455–460',
             }
 
     if 16 in books:
