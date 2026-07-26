@@ -5,11 +5,13 @@ on:
     branches: [main]
     paths:
       - 'tools/build_source.py'
+      - 'tests/**'
       - '.github/workflows/build-source.yml'
   pull_request:
     branches: [main]
     paths:
       - 'tools/build_source.py'
+      - 'tests/**'
       - '.github/workflows/build-source.yml'
   workflow_dispatch:
 
@@ -20,54 +22,29 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.head_ref || github.ref_name }}
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+      - name: Run source-patch tests
+        run: python -m unittest discover -s tests -v
       - name: Download, clean, validate and segment
-        run: |
-          set +e
-          python -u tools/build_source.py > build-diagnostic.log 2>&1
-          status=$?
-          if [ -f source/original/odyssey_perseus_grc2.xml ]; then
-            python - <<'PY' >> build-diagnostic.log 2>&1
-          import collections
-          import xml.etree.ElementTree as ET
-          p='source/original/odyssey_perseus_grc2.xml'
-          ns='{http://www.tei-c.org/ns/1.0}'
-          root=ET.parse(p).getroot()
-          edition=root.find(f'.//{ns}div[@type="edition"]')
-          for b in edition.findall(f'./{ns}div[@subtype="book"]'):
-              bn=int(b.attrib['n'])
-              nums=[int(x.attrib['n']) for x in b.iter(f'{ns}l')]
-              if bn in {10,16,23}:
-                  missing=sorted(set(range(1,max(nums)+1))-set(nums))
-                  dup=sorted(n for n,c in collections.Counter(nums).items() if c>1)
-                  print({'book':bn,'count':len(nums),'min':min(nums),'max':max(nums),'missing':missing,'duplicates':dup})
-          PY
-          fi
-          cat build-diagnostic.log
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add build-diagnostic.log
-            git commit -m 'Record source build diagnostic' || true
-            git push origin HEAD:${{ github.head_ref }}
-          fi
-          exit "$status"
+        run: python -u tools/build_source.py
       - name: Verify generated package
         run: |
           test "$(find source/books -type f | wc -l)" -eq 24
           test "$(find source/lines -type f | wc -l)" -eq 24
           test -s source/manifest.tsv
+          test -s source/SOURCE_PATCHES.md
           python - <<'PY'
           import json
           d=json.load(open('source/source_build.json'))
           assert d['books']==24
           assert d['verse_lines']==12110
           assert d['segments']>24
+          assert len(d['source_patches'])==3
           print(d)
           PY
       - name: Commit generated source files
