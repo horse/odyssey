@@ -31,6 +31,23 @@ jobs:
           set +e
           python -u tools/build_source.py > build-diagnostic.log 2>&1
           status=$?
+          if [ -f source/original/odyssey_perseus_grc2.xml ]; then
+            python - <<'PY' >> build-diagnostic.log 2>&1
+          import collections
+          import xml.etree.ElementTree as ET
+          p='source/original/odyssey_perseus_grc2.xml'
+          ns='{http://www.tei-c.org/ns/1.0}'
+          root=ET.parse(p).getroot()
+          edition=root.find(f'.//{ns}div[@type="edition"]')
+          for b in edition.findall(f'./{ns}div[@subtype="book"]'):
+              bn=int(b.attrib['n'])
+              nums=[int(x.attrib['n']) for x in b.iter(f'{ns}l')]
+              if bn in {10,16,23}:
+                  missing=sorted(set(range(1,max(nums)+1))-set(nums))
+                  dup=sorted(n for n,c in collections.Counter(nums).items() if c>1)
+                  print({'book':bn,'count':len(nums),'min':min(nums),'max':max(nums),'missing':missing,'duplicates':dup})
+          PY
+          fi
           cat build-diagnostic.log
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git config user.name 'github-actions[bot]'
