@@ -1,11 +1,14 @@
 Traceback (most recent call last):
-  File "/home/runner/work/odyssey/odyssey/tools/build_source.py", line 494, in <module>
+  File "/home/runner/work/odyssey/odyssey/tools/build_source.py", line 552, in <module>
     main()
-  File "/home/runner/work/odyssey/odyssey/tools/build_source.py", line 380, in main
-    validate(books)
-  File "/home/runner/work/odyssey/odyssey/tools/build_source.py", line 239, in validate
-    raise AssertionError(f'Book {book}: non-continuous line numbering')
-AssertionError: Book 3: non-continuous line numbering
+  File "/home/runner/work/odyssey/odyssey/tools/build_source.py", line 425, in main
+    patches = apply_source_patches(books)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/odyssey/odyssey/tools/build_source.py", line 170, in apply_source_patches
+    _repair_order(
+  File "/home/runner/work/odyssey/odyssey/tools/build_source.py", line 152, in _repair_order
+    raise ValueError(f'{patch_id}: unexpected line-order anomaly')
+ValueError: PATCH-OD03-304-305-ORDER: unexpected line-order anomaly
 RAW XML LINE-ID ANOMALIES
 {'book': 3, 'count': 497, 'min': 1, 'max': 497, 'missing': [], 'duplicates': [], 'non_increasing': [(305, 304)]}
 {'book': 10, 'count': 573, 'min': 1, 'max': 574, 'missing': [456], 'duplicates': [], 'non_increasing': []}
