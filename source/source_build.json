@@ -1,0 +1,17 @@
+{
+  "source_url": "https://raw.githubusercontent.com/PerseusDL/canonical-greekLit/master/data/tlg0012/tlg002/tlg0012.tlg002.perseus-grc2.xml",
+  "source_git_blob_sha": "f38f5f238d665eafb9c6878b11283822ed418a07",
+  "books": 24,
+  "verse_lines": 12110,
+  "segments": 72,
+  "target_chars": 6200,
+  "minimum_chars": 3500,
+  "maximum_chars": 8200,
+  "source_patches": [
+    "PATCH-OD03-304-305-ORDER",
+    "PATCH-OD10-456",
+    "PATCH-OD14-63-64-ORDER",
+    "PATCH-OD16-101",
+    "PATCH-OD23-48-49"
+  ]
+}
