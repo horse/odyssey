@@ -51,6 +51,8 @@ def parse(path:Path):
     return books,blob_sha(raw)
 
 def validate(books):
+    counts={b:len(vs) for b,vs in sorted(books.items())}
+    print(json.dumps({'parsed_books':sorted(books),'per_book_counts':counts,'total_lines':sum(counts.values())},ensure_ascii=False))
     assert sorted(books)==list(range(1,25))
     assert sum(len(v) for v in books.values())==12110
     for b,vs in books.items():
